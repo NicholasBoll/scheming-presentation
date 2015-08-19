@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="bower_components/reveal.js/css/reveal.css">
-  <link rel="stylesheet" href="bower_components/reveal.js/css/theme/sky.css">
+  <link rel="stylesheet" href="bower_components/reveal.js/css/theme/white.css">
   <link rel="stylesheet" type="text/css" href="bower_components/highlightjs/styles/monokai.css">
 </head>
 <body>
@@ -216,6 +216,7 @@ lisa.watch 'mother', (newVal, oldVal) ->
   <script src="bower_components/reveal.js/plugin/notes/notes.js"></script>
   <script>
     Reveal.initialize({
+      transition: 'concave',
       dependencies: [
         { src: 'bower_components/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
       ],
