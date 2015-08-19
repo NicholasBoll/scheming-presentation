@@ -1,0 +1,20 @@
+{
+  "name": "scheming-presentation",
+  "version": "1.0.0",
+  "description": "Angular component presentation",
+  "main": "index.js",
+  "scripts": {
+    "start": "",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NicholasBoll/scheming-presentation.git"
+  },
+  "author": "nicholas.boll@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NicholasBoll/scheming-presentation/issues"
+  },
+  "homepage": "https://github.com/NicholasBoll/scheming-presentation"
+}

@@ -1,0 +1,226 @@
+<!doctype html>
+<html ng-app="presentation">
+<head>
+  <meta charset="utf-8">
+  <title>Scheming</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="bower_components/reveal.js/css/reveal.css">
+  <link rel="stylesheet" href="bower_components/reveal.js/css/theme/sky.css">
+  <link rel="stylesheet" type="text/css" href="bower_components/highlightjs/styles/monokai.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class="present">
+        <h2>Scheming</h2>
+        <p>by Nicholas Boll</p>
+      </section>
+      <section>
+        <h2>Who Am I?</h2>
+        <ul>
+          <li><a href="http://twitter.com/NicholasBoll">@NicholasBoll</a></li>
+          <li>nicholas.boll@gmail.com</li>
+          <li>I'm a Software Engineer at LogRhythm</li>
+          <li>I've been writing software for a long time</li>
+        </ul>
+      </section>
+      <section>
+        <h2>What is <a href="https://github.com/autoric/scheming">Scheming</a>?</h2>
+        <ul>
+          <li class="fragment">Created by <a href="https://github.com/autoric">Erin Noe-Payne</a></li>
+          <li class="fragment">Isomorphic, reactive, typed JavaScript Objects!</li>
+        </ul>
+      </section>
+      <section>
+        <h2>What does it provide?</h2>
+        <ul>
+          <li class="fragment">Typed object schemas</li>
+          <li class="fragment">Nested schemas</li>
+          <li class="fragment">Validators</li>
+          <li class="fragment">Observe (deep) model changes</li>
+          <li class="fragment">Batched change resolution</li>
+        </ul>
+      </section>
+      <section>
+        <h2>What doesn't it provide?</h2>
+        <ul>
+          <li class="fragment">Database communication</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Example:</h2>
+        <pre><code class="language-coffeescript">
+Scheming = require('Scheming')
+
+User = Scheming.create 'User',
+  name :
+    type : String
+    required : true
+  email :
+    type : String,
+    required : true
+    validate : (val) ->
+      if val.match('@')
+        return true
+      else
+        return 'An email address must have an @ symbol!'
+  birthday : Date
+  password :
+    type : String
+    setter : (val) ->
+      return md5(val)
+
+Group = Scheming.create 'Group',
+  name : String
+  dateCreated : {type : Date, default : -> Date.now()}
+  users : [User]
+
+jane = new User
+  email : 'jane.gmail.com'
+  birthday : '9/14/86'
+  password : 'p@$$w0rd!'
+
+console.log Person.validate jane
+# {name : 'Field is required.', email: 'An email address must have an @ symbol!'}
+
+jane.name = 'jane'
+jane.email = 'jane@gmail.com'
+
+console.log Person.validate jane
+# null
+        </code></pre>
+      </section>
+      <section>
+        <h2>Nesting</h2>
+        <pre><code class="language-coffeescript">
+Car = Schema.create
+  make : String
+  model : String
+
+Person = Schema.create
+  name : String
+  car : Car
+
+mark = new Person {name : 'mark'}
+
+# Explicit construction and assignment
+# At the time of assignment, civic is already an instance of Car
+# so the Car constructor will not be invoked a second time
+civic = new Car {make : 'honda', model : 'civic'}
+mark.car = civic
+
+# Implicit construction
+# At the time of assignment, the value is a plain object. Therefore
+# the object is passed to the Car  constructor (or in strict mode,
+# an error is thrown)
+mark.car = {make : 'toyota', model : 'corolla'}
+mark.car instanceof Car # true
+        </code></pre>
+      </section>
+      <section>
+        <h2>Validation</h2>
+        <pre><code class="language-coffeescript">
+Person = Scheming.create
+  name :
+    type : String
+    validate : [
+      -> return "Error number one"
+      -> throw new Error "Error number two"
+      -> return true
+      -> return false
+    ]
+
+bill = new Person()
+
+errors = Person.validate bill
+# returns null, because bill object does not have a name defined, and name is not required
+
+bill.name = 'bill'
+errors = Person.validate bill
+# {name : ["Error number one", "Error number two", "Validation error occurred."]}
+        </code></pre>
+      </section>
+      <section>
+        <h2>Watches</h2>
+        <pre><code class="language-coffeescript">
+Person = Scheming.create 'Person',
+  name : String
+  age : Number
+  mother :
+    type: 'Schema:Person'
+    default: {} # create implicit model - otherwise will default to undefined
+  friends : ['Schema:Person']
+
+lisa = new Person()
+
+# Sync changes are rolled up
+lisa.name = 'a'
+lisa.name = 'b'
+lisa.name = 'lisa'
+
+# Async change resolution
+lisa.watch 'name', (newVal, oldVal) ->
+  # this listener is called once
+  newVal == 'lisa'
+  oldVal == undefined
+
+lisa.mother.name = 'jane'
+
+# Deep watch
+lisa.watch 'mother', (newVal, oldVal) ->
+  newVal.name == 'jane'
+  oldVal.name == undefined
+        </code></pre>
+      </section>
+      <section>
+        <section>
+          <h2>What do we use it for?</h2>
+          <ul>
+            <li class="fragment">AngularJS components</li>
+          </ul>
+        </section>
+        <section>
+          <img src="img/whaaaat.jpg" alt="Whaaaat?" />
+        </section>
+        <section>
+          <h2>Component Models</h2>
+          <ul>
+            <li class="fragment">Data contract</li>
+            <li class="fragment">Put the "M" in *VC</li>
+            <li class="fragment">Ditch <code>$scope.$watch</code></li>
+            <li class="fragment">Ditch 2-way data bindings</li>
+            <li class="fragment">Move <em>WAY</em> past 2,000 bindings</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Performance</h2>
+          <ul>
+            <li class="fragment">Change resolution on rAF</li>
+            <li class="fragment">Assignment is more expensive</li>
+            <li class="fragment">(Deep) watches are cheap</li>
+            <li class="fragment">Can disconnect component's <code>$scope</code></li>
+            <li class="fragment">Don't need <code>$scope.$apply()</code> for changes</li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <h2>Questions?</h2>
+      </section>
+    </div>
+  </div>
+  <script src="bower_components/reveal.js/lib/js/head.min.js"></script>
+  <script src="bower_components/reveal.js/js/reveal.js"></script>
+  <script src="bower_components/reveal.js/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      dependencies: [
+        { src: 'bower_components/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+      ],
+      history: true
+    });
+  </script>
+</body>
+</html>
